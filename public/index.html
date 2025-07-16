@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cozmo Coding Playground</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Fredoka One', 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #eaf6ff 0%, #fff4e8 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .main-wrapper {
+            display: flex;
+            flex-direction: row;
+            max-width: 1480px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        .toolbox {
+            width: 300px;
+            background: #e4f6ff;
+            border-right: 3px solid #bde4fc;
+            padding: 22px 0 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .toolbox-header {
+            font-size: 1.6em;
+            color: #0a89de;
+            text-align: center;
+            margin-bottom: 22px;
+            font-weight: bold;
+            letter-spacing: 0.02em;
+        }
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 24px;
+        }
+        .category-btn {
+            background: linear-gradient(90deg, #7eeaff 20%, #8cfcb8 100%);
+            border: none;
+            border-radius: 13px;
+            font-family: inherit;
+            font-size: 1.13em;
+            font-weight: bold;
+            padding: 11px 15px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            color: #1c2e3b;
+            text-align: left;
+            box-shadow: 0 1px 8px #92fcb855;
+            transition: background 0.14s, color 0.11s, transform 0.10s;
+        }
+        .category-btn.selected, .category-btn:active {
+            background: linear-gradient(90deg, #fd71ba 0%, #ffc542 100%);
+            color: #fff;
+            transform: scale(0.98);
+        }
+        .command-list {
+            margin: 12px 24px 0 24px;
+            padding: 13px 13px 14px 14px;
+            background: #f8f8fe;
+            border-radius: 14px;
+            box-shadow: 0 1px 8px #c7f2ff24;
+            display: none;
+            flex-direction: column;
+            gap: 7px;
+            animation: fadein 0.2s;
+        }
+        .command-list.active {
+            display: flex;
+        }
+        .command-btn {
+            background: linear-gradient(90deg, #a9fff7 0%, #cdfec7 100%);
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            padding: 8px 15px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            color: #2c323c;
+            text-align: left;
+            box-shadow: 0 1px 6px #bdf7e744;
+            transition: background 0.13s, transform 0.08s;
+        }
+        .command-btn:active {
+            background: linear-gradient(90deg, #ffc542 0%, #fd71ba 100%);
+            color: #fff;
+            transform: scale(0.96);
+        }
+        @keyframes fadein {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        .main-editor {
+            flex: 1 1 0;
+            min-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 44px 50px 38px 50px;
+            background: #fffdfa;
+        }
+        .editor-label {
+            font-size: 1.27em;
+            font-weight: bold;
+            margin-bottom: 9px;
+            color: #156fad;
+            letter-spacing: 0.01em;
+        }
+        .big-editor-area {
+            flex: 1;
+            margin-bottom: 16px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 340px;
+            font-size: 1.18em;
+            border-radius: 13px;
+            border: 2px solid #99e4c4;
+            background: #fafff8;
+            padding: 18px 12px;
+            margin-bottom: 10px;
+            resize: vertical;
+            box-shadow: 0 1px 9px #aad7c888;
+            font-family: 'Roboto Mono', 'Roboto', monospace, Arial;
+        }
+        .run-btn-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 9px;
+        }
+        .run-btn {
+            padding: 13px 36px;
+            background: linear-gradient(90deg, #fd71ba 0%, #ffc542 100%);
+            color: #fff;
+            font-size: 1.18em;
+            border: none;
+            border-radius: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 10px #ffc54255;
+            transition: background 0.16s, transform 0.11s;
+        }
+        .run-btn:hover { background: linear-gradient(90deg, #ffc542 0%, #fd71ba 100%);}
+        .output-bar {
+            background: #ddf6ff;
+            color: #1185b2;
+            border-radius: 8px;
+            padding: 13px 16px 12px;
+            font-size: 1.13em;
+            min-height: 30px;
+            box-shadow: 0 1px 6px #bbe9f560;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        .summary-bar {
+            margin: 17px 0 6px 0;
+            background: #f7f2ff;
+            color: #5e1ea6;
+            border-radius: 8px;
+            padding: 13px 15px 11px 15px;
+            font-size: 1.11em;
+            font-family: 'Roboto', Arial, sans-serif;
+            box-shadow: 0 1px 4px #c7b4e3;
+        }
+        #summary-text { font-weight: 500; }
+        @media (max-width: 1000px) {
+            .main-wrapper {flex-direction:column;}
+            .toolbox {flex-direction: row; width: 100vw; border-right: none; border-bottom: 3px solid #bde4fc;}
+            .category-list {flex-direction: row;}
+            .command-list {margin: 12px 5vw 0 5vw;}
+            .main-editor {padding: 16px 4vw;}
+        }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+
+    <nav class="toolbox">
+        <div class="toolbox-header">Toolbox</div>
+        <div class="category-list">
+            <button class="category-btn selected" data-category="movement">Movement</button>
+            <button class="category-btn" data-category="emotions">Emotions</button>
+            <button class="category-btn" data-category="speech">Speech</button>
+        </div>
+
+        <!-- Movement commands -->
+        <div class="command-list active" id="commands-movement">
+            <button class="command-btn">go distance speed</button>
+            <button class="command-btn">turn degree</button>
+            <button class="command-btn">hand (0.0-1.0)</button>
+            <button class="command-btn">head (0.0-1.0)</button>
+            <button class="command-btn">light on</button>
+            <button class="command-btn">light off</button>
+            <button class="command-btn">celebrate</button>
+            <button class="command-btn">pickup_cube (1, 2, 3)</button>
+        </div>
+        <!-- Emotion commands -->
+        <div class="command-list" id="commands-emotions">
+            <button class="command-btn">show_emotion happy</button>
+            <button class="command-btn">show_emotion sad</button>
+            <button class="command-btn">show_emotion angry</button>
+            <button class="command-btn">show_emotion surprised</button>
+            <button class="command-btn">show_emotion excited</button>
+            <button class="command-btn">show_emotion bored</button>
+            <button class="command-btn">show_emotion tired</button>
+            <button class="command-btn">show_emotion amazed</button>
+            <button class="command-btn">show_emotion disgusted</button>
+            <button class="command-btn">show_emotion afraid</button>
+            <button class="command-btn">show_emotion guilty</button>
+            <button class="command-btn">show_emotion disappointed</button>
+            <button class="command-btn">show_emotion embarrassed</button>
+            <button class="command-btn">show_emotion annoyed</button>
+            <button class="command-btn">show_emotion furious</button>
+            <button class="command-btn">show_emotion suspicious</button>
+            <button class="command-btn">show_emotion rejected</button>
+            <button class="command-btn">show_emotion confused</button>
+        </div>
+        <!-- Speech commands -->
+        <div class="command-list" id="commands-speech">
+            <button class="command-btn">say Hello!</button>
+        </div>
+    </nav>
+
+    <main class="main-editor">
+        <div class="editor-label">Write your program:</div>
+        <div class="big-editor-area">
+            <textarea id="sequence-input" rows="12">go 200 100
+turn 90
+hand 0.5
+show_emotion happy
+say Hello!
+</textarea>
+        </div>
+        <div class="run-btn-row">
+            <button class="run-btn" id="run-btn" onclick="runSequence()">▶️ Run My Program!</button>
+            <button class="run-btn" id="stop-btn" style="background:linear-gradient(90deg,#fa3c56 0%,#fdba00 100%);color:#fff;" onclick="stopSequence()">⏹ Stop</button>
+        </div>
+        <div class="output-bar" id="tutorial-status">Ready to play!</div>
+        <div class="summary-bar" id="command-summary">
+            <b>What Cozmo will do:</b>
+            <span id="summary-text"></span>
+        </div>
+    </main>
+</div>
+<script>
+    // Toolbox category selection logic
+    const categories = ["movement", "emotions", "speech"];
+    const btns = document.querySelectorAll('.category-btn');
+    btns.forEach(btn => btn.addEventListener('click', function() {
+        btns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        categories.forEach(cat => {
+            document.getElementById('commands-' + cat).classList.remove('active');
+        });
+        document.getElementById('commands-' + btn.dataset.category).classList.add('active');
+    }));
+
+    // Insert command from toolbox into editor at cursor
+    document.querySelectorAll('.command-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const textarea = document.getElementById("sequence-input");
+            const value = textarea.value;
+            const start = textarea.selectionStart, end = textarea.selectionEnd;
+            const insert = btn.innerText;
+            // Insert at cursor or add as new line
+            if (value.length && start !== undefined) {
+                const before = value.slice(0, start);
+                const after = value.slice(end);
+                textarea.value = before + (before && !before.endsWith('\n') ? '\n' : '') + insert + '\n' + after;
+            } else {
+                textarea.value += (value ? '\n' : '') + insert + '\n';
+            }
+            textarea.focus();
+            updateCommandSummary();
+        });
+    });
+
+    // Sequence runner logic (as before)
+    function parseCommands(lines) {
+        const result = [];
+        let i = 0;
+        while (i < lines.length) {
+            const line = lines[i].trim();
+            if (line.toLowerCase().startsWith("repeat ")) {
+                const match = line.match(/^repeat (\d+):$/i);
+                if (match) {
+                    const count = parseInt(match[1]);
+                    i++;
+                    const block = [];
+                    while (i < lines.length && (lines[i].startsWith("  ") || lines[i].startsWith("\t"))) {
+                        block.push(lines[i].trim());
+                        i++;
+                    }
+                    for (let r = 0; r < count; r++) {
+                        result.push(...block);
+                    }
+                    continue;
+                }
+            }
+            if (line !== "") {
+                result.push(line);
+            }
+            i++;
+        }
+        return result;
+    }
+
+    async function runSequence() {
+        stopRequested = false;
+        const runBtn = document.getElementById('run-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        runBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        const rawLines = document.getElementById("sequence-input").value.split("\n");
+        const lines = parseCommands(rawLines);
+        const status = document.getElementById("tutorial-status");
+        if (lines.length === 0) {
+            status.innerText = "Please enter at least one command.";
+            runBtn.disabled = false;
+            stopBtn.disabled = true;
+            return;
+        }
+        status.innerText = "⏳ Cozmo is following your plan...";
+        for (let cmd of lines) {
+            if (stopRequested) {
+                status.innerText = "⏹️ Stopped by user!";
+                break;
+            }
+            status.innerText = `👉 Sending: ${cmd}`;
+            try {
+                const resp = await fetch("/command", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ command: cmd })
+                });
+                let data = {};
+                try { data = await resp.json(); } catch {}
+                if (data.status) status.innerText = data.status;
+            } catch (err) {
+                status.innerText = "⚠️ Network error!";
+                break;
+            }
+            await new Promise(res => setTimeout(res, 1600));
+        }
+        runBtn.disabled = false;
+        stopBtn.disabled = true;
+        if (!stopRequested) status.innerText = "✅ Hooray! Cozmo finished your program!";
+    }
+
+    function stopSequence() {
+        stopRequested = true;
+        document.getElementById('stop-btn').disabled = true;
+        sendCmd("stop");
+    }
+
+    async function sendCmd(cmd) {
+        const status = document.getElementById("tutorial-status");
+        status.innerText = `👉 Sending: ${cmd}`;
+        try {
+            const resp = await fetch("/command", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ command: cmd })
+            });
+            let data = {};
+            try { data = await resp.json(); } catch {}
+            if(data.status) status.innerText = data.status;
+            else status.innerText = `✅ Ran: ${cmd}`;
+        } catch (err) {
+            status.innerText = "⚠️ Network error!";
+        }
+    }
+
+    function updateCommandSummary() {
+        const summary = document.getElementById('summary-text');
+        const code = document.getElementById('sequence-input').value.trim();
+        if (!code) {
+            summary.innerText = "No commands yet.";
+            return;
+        }
+        let lines = code.split("\n").map(l => l.trim()).filter(l => l);
+        summary.innerText = lines.join(" → ");
+    }
+    document.getElementById('sequence-input').addEventListener('input', updateCommandSummary);
+    updateCommandSummary();
+
+    let stopRequested = false;
+</script>
+</body>
+</html>

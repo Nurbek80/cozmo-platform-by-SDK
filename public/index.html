@@ -196,55 +196,78 @@
             <button class="category-btn selected" data-category="movement">Movement</button>
             <button class="category-btn" data-category="emotions">Emotions</button>
             <button class="category-btn" data-category="speech">Speech</button>
+            <button class="category-btn" data-category="tools">Tools (2 space in new line)</button>
         </div>
 
         <!-- Movement commands -->
         <div class="command-list active" id="commands-movement">
             <button class="command-btn">go distance speed</button>
             <button class="command-btn">turn degree</button>
-            <button class="command-btn">hand (0.0-1.0)</button>
-            <button class="command-btn">head (0.0-1.0)</button>
+            <button class="command-btn">hand 0.0-1.0</button>
+            <button class="command-btn">head 0.0-1.0</button>
             <button class="command-btn">light on</button>
             <button class="command-btn">light off</button>
             <button class="command-btn">celebrate</button>
-            <button class="command-btn">pickup_cube (1, 2, 3)</button>
+            <button class="command-btn">pickup cube ?</button>
+            <button class="command-btn">pickup cube</button>
         </div>
         <!-- Emotion commands -->
         <div class="command-list" id="commands-emotions">
-            <button class="command-btn">show_emotion happy</button>
-            <button class="command-btn">show_emotion sad</button>
-            <button class="command-btn">show_emotion angry</button>
-            <button class="command-btn">show_emotion surprised</button>
-            <button class="command-btn">show_emotion excited</button>
-            <button class="command-btn">show_emotion bored</button>
-            <button class="command-btn">show_emotion tired</button>
-            <button class="command-btn">show_emotion amazed</button>
-            <button class="command-btn">show_emotion disgusted</button>
-            <button class="command-btn">show_emotion afraid</button>
-            <button class="command-btn">show_emotion guilty</button>
-            <button class="command-btn">show_emotion disappointed</button>
-            <button class="command-btn">show_emotion embarrassed</button>
-            <button class="command-btn">show_emotion annoyed</button>
-            <button class="command-btn">show_emotion furious</button>
-            <button class="command-btn">show_emotion suspicious</button>
-            <button class="command-btn">show_emotion rejected</button>
-            <button class="command-btn">show_emotion confused</button>
+            <button class="command-btn">show emotion happy</button>
+            <button class="command-btn">show emotion sad</button>
+            <button class="command-btn">show emotion angry</button>
+            <button class="command-btn">show emotion surprised</button>
+            <button class="command-btn">show emotion excited</button>
+            <button class="command-btn">show emotion bored</button>
+            <button class="command-btn">show emotion tired</button>
+            <button class="command-btn">show emotion amazed</button>
+            <button class="command-btn">show emotion disgusted</button>
+            <button class="command-btn">show emotion afraid</button>
+            <button class="command-btn">show emotion guilty</button>
+            <button class="command-btn">show emotion disappointed</button>
+            <button class="command-btn">show emotion embarrassed</button>
+            <button class="command-btn">show emotion annoyed</button>
+            <button class="command-btn">show emotion furious</button>
+            <button class="command-btn">show emotion suspicious</button>
+            <button class="command-btn">show emotion rejected</button>
+            <button class="command-btn">show emotion confused</button>
+            <button class="command-btn">show emotion greeting</button>
+            <button class="command-btn">show emotion fistbump</button>
+            <button class="command-btn">show emotion cat</button>
+            <button class="command-btn">show emotion dog</button>
+            <button class="command-btn">show emotion sleep</button>
+            <button class="command-btn">show emotion wake</button>
         </div>
         <!-- Speech commands -->
         <div class="command-list" id="commands-speech">
-            <button class="command-btn">say Hello!</button>
+            <button class="command-btn">say ???</button>
+        </div>
+        <!-- Tools/Conditions -->
+        <div class="command-list" id="commands-tools">
+            <button class="command-btn" data-block="repeat">repeat x:
+            </button>
+
+            <button class="command-btn" data-block="if1">if cube 1 is tapped:
+            </button>
+
+            <button class="command-btn" data-block="if2">if cube 2 is tapped:
+            </button>
+
+            <button class="command-btn" data-block="if3">if cube 3 is tapped:
+            </button>
+
+            <button class="command-btn" data-block="when1">when cube 1 is tapped:
+            </button>
+
         </div>
     </nav>
 
     <main class="main-editor">
         <div class="editor-label">Write your program:</div>
         <div class="big-editor-area">
-            <textarea id="sequence-input" rows="12">go 200 100
-turn 90
-hand 0.5
-show_emotion happy
-say Hello!
-</textarea>
+            <textarea id="sequence-input" rows="14">go 200 100
+
+            </textarea>
         </div>
         <div class="run-btn-row">
             <button class="run-btn" id="run-btn" onclick="runSequence()">▶️ Run My Program!</button>
@@ -259,7 +282,7 @@ say Hello!
 </div>
 <script>
     // Toolbox category selection logic
-    const categories = ["movement", "emotions", "speech"];
+    const categories = ["movement", "emotions", "speech", "tools"];
     const btns = document.querySelectorAll('.category-btn');
     btns.forEach(btn => btn.addEventListener('click', function() {
         btns.forEach(b => b.classList.remove('selected'));
@@ -276,96 +299,66 @@ say Hello!
             const textarea = document.getElementById("sequence-input");
             const value = textarea.value;
             const start = textarea.selectionStart, end = textarea.selectionEnd;
-            const insert = btn.innerText;
+            // Support block insert for tools
+            let insert = btn.getAttribute('data-block') ? btn.innerText : btn.innerText;
+            if (btn.getAttribute('data-block')) {
+                // Block: always insert with two newlines before/after if not at top
+                insert = (value && !value.endsWith('\n') ? '\n' : '') + insert + '\n';
+            }
+            else {
+                insert = (value.length && start !== undefined && !value.slice(0, start).endsWith('\n') ? '\n' : '') + insert + '\n';
+            }
             // Insert at cursor or add as new line
-            if (value.length && start !== undefined) {
+            if (start !== undefined) {
                 const before = value.slice(0, start);
                 const after = value.slice(end);
-                textarea.value = before + (before && !before.endsWith('\n') ? '\n' : '') + insert + '\n' + after;
+                textarea.value = before + insert + after;
             } else {
-                textarea.value += (value ? '\n' : '') + insert + '\n';
+                textarea.value += insert;
             }
             textarea.focus();
             updateCommandSummary();
         });
     });
 
-    // Sequence runner logic (as before)
-    function parseCommands(lines) {
-        const result = [];
-        let i = 0;
-        while (i < lines.length) {
-            const line = lines[i].trim();
-            if (line.toLowerCase().startsWith("repeat ")) {
-                const match = line.match(/^repeat (\d+):$/i);
-                if (match) {
-                    const count = parseInt(match[1]);
-                    i++;
-                    const block = [];
-                    while (i < lines.length && (lines[i].startsWith("  ") || lines[i].startsWith("\t"))) {
-                        block.push(lines[i].trim());
-                        i++;
-                    }
-                    for (let r = 0; r < count; r++) {
-                        result.push(...block);
-                    }
-                    continue;
-                }
-            }
-            if (line !== "") {
-                result.push(line);
-            }
-            i++;
-        }
-        return result;
-    }
-
+    // Sequence runner logic (send whole script)
     async function runSequence() {
-        stopRequested = false;
         const runBtn = document.getElementById('run-btn');
         const stopBtn = document.getElementById('stop-btn');
         runBtn.disabled = true;
         stopBtn.disabled = false;
 
-        const rawLines = document.getElementById("sequence-input").value.split("\n");
-        const lines = parseCommands(rawLines);
+        const code = document.getElementById("sequence-input").value;
         const status = document.getElementById("tutorial-status");
-        if (lines.length === 0) {
+        if (!code.trim()) {
             status.innerText = "Please enter at least one command.";
             runBtn.disabled = false;
             stopBtn.disabled = true;
             return;
         }
         status.innerText = "⏳ Cozmo is following your plan...";
-        for (let cmd of lines) {
-            if (stopRequested) {
-                status.innerText = "⏹️ Stopped by user!";
-                break;
-            }
-            status.innerText = `👉 Sending: ${cmd}`;
-            try {
-                const resp = await fetch("/command", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ command: cmd })
-                });
-                let data = {};
-                try { data = await resp.json(); } catch {}
-                if (data.status) status.innerText = data.status;
-            } catch (err) {
-                status.innerText = "⚠️ Network error!";
-                break;
-            }
-            await new Promise(res => setTimeout(res, 1600));
+
+        try {
+            const resp = await fetch("/run_program", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ program: code })
+            });
+            let data = {};
+            try { data = await resp.json(); } catch {}
+            if (data.status) status.innerText = data.status;
+            else status.innerText = "✅ Program sent!";
+        } catch (err) {
+            status.innerText = "⚠️ Network error!";
         }
+
         runBtn.disabled = false;
         stopBtn.disabled = true;
-        if (!stopRequested) status.innerText = "✅ Hooray! Cozmo finished your program!";
     }
 
     function stopSequence() {
-        stopRequested = true;
         document.getElementById('stop-btn').disabled = true;
+        // Send stop as a special one-line program
         sendCmd("stop");
     }
 
@@ -373,10 +366,10 @@ say Hello!
         const status = document.getElementById("tutorial-status");
         status.innerText = `👉 Sending: ${cmd}`;
         try {
-            const resp = await fetch("/command", {
+            const resp = await fetch("/run_program", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ command: cmd })
+                body: JSON.stringify({ program: cmd })
             });
             let data = {};
             try { data = await resp.json(); } catch {}
@@ -399,8 +392,6 @@ say Hello!
     }
     document.getElementById('sequence-input').addEventListener('input', updateCommandSummary);
     updateCommandSummary();
-
-    let stopRequested = false;
 </script>
 </body>
 </html>

@@ -13,36 +13,49 @@ cozmo = CozmoEasy()
 class Program(BaseModel):
     program: str
 
-def parse_commands(lines):
+def count_indent(line):
+    return len(line) - len(line.lstrip(' '))
+
+def parse_commands(lines, base_indent=0):
     commands = []
     i = 0
     while i < len(lines):
-        line = lines[i].rstrip()
-        if line.lower().startswith("repeat "):
-            match = re.match(r"repeat (\d+):", line.lower())
+        line = lines[i]
+        indent = count_indent(line)
+        stripped = line.strip()
+        if not stripped:
+            i += 1
+            continue
+        if indent < base_indent:
+            break
+
+        if stripped.lower().startswith("repeat "):
+            match = re.match(r"repeat (\d+):", stripped.lower())
             if match:
                 count = int(match.group(1))
                 i += 1
                 block = []
-                while i < len(lines) and (lines[i].startswith("  ") or lines[i].startswith("\t")):
-                    block.append(lines[i].lstrip())
+                while i < len(lines) and count_indent(lines[i]) > indent:
+                    block.append(lines[i])
                     i += 1
-                commands.append(("repeat", count, parse_commands(block)))
+                commands.append(("repeat", count, parse_commands(block, indent+1)))
                 continue
-        if re.match(r'^if cube \d is tapped:', line.lower()):
-            match = re.match(r'^if cube (\d) is tapped:', line.lower())
+
+        if re.match(r'^if cube \d is tapped:', stripped.lower()):
+            match = re.match(r'^if cube (\d) is tapped:', stripped.lower())
             cube_number = int(match.group(1))
             i += 1
             block = []
-            while i < len(lines) and (lines[i].startswith("  ") or lines[i].startswith("\t")):
-                block.append(lines[i].lstrip())
+            while i < len(lines) and count_indent(lines[i]) > indent:
+                block.append(lines[i])
                 i += 1
-            commands.append(("if_cube_tap", cube_number, parse_commands(block)))
+            commands.append(("if_cube_tap", cube_number, parse_commands(block, indent+1)))
             continue
-        if line != "":
-            commands.append(("cmd", line))
+
+        commands.append(("cmd", stripped))
         i += 1
     return commands
+
 
 def execute_commands(commands, cozmo):
     for cmd in commands:

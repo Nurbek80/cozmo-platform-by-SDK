@@ -14,7 +14,7 @@ class Program(BaseModel):
     program: str
 
 def count_indent(line):
-    return len(line) - len(line.lstrip(' '))
+    return len(line) - len(line.lstrip('\t'))
 
 def parse_commands(lines, base_indent=0):
     commands = []
